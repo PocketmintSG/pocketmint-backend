@@ -1,0 +1,10 @@
+{
+  "apiKey": "AIzaSyDe2EL4mshzuCsQoA9moiNv3uQZmkxLGXg",
+  "authDomain": "pocketmint-backend.firebaseapp.com",
+  "projectId": "pocketmint-backend",
+  "storageBucket": "pocketmint-backend.appspot.com",
+  "messagingSenderId": "49057279925",
+  "appId": "1:49057279925:web:a396421a9a99ba056ef3fc",
+  "measurementId": "G-PWTJ312C5M",
+  "databaseURL": "https://pocketmint-backend-default-rtdb.asia-southeast1.firebasedatabase.app/"
+}
