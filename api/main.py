@@ -48,7 +48,7 @@ app.add_middleware(
     allow_methods=allow_all,
     allow_headers=allow_all,
 )
-handler = Mangum(app)
+handler = Mangum(app=app)
 
 
 @app.get("/")
