@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from mangum import Mangum
-from api.utils.test_routes import utils_router
+from .utils.test_routes import utils_router
 
 cred = credentials.Certificate(
     {
