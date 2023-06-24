@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
+from mangum import Mangum
 
 cred = credentials.Certificate("firebase_secrets.json")
 firebase = firebase_admin.initialize_app(cred)
@@ -22,11 +23,12 @@ app.add_middleware(
     allow_methods=allow_all,
     allow_headers=allow_all,
 )
+handler = Mangum(app)
 
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"message": "Hello World"}
 
 
 # signup endpoint
