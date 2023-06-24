@@ -27,7 +27,7 @@ handler = Mangum(app)
 
 
 @app.get("/")
-def read_root():
+async def root():
     return {"message": "Hello World"}
 
 
