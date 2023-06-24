@@ -48,7 +48,6 @@ app.add_middleware(
     allow_methods=allow_all,
     allow_headers=allow_all,
 )
-handler = Mangum(app=app)
 
 
 @app.get("/")
@@ -104,3 +103,5 @@ async def validate(request: Request):
 
 if __name__ == "__main__":
     uvicorn.run("main:app")
+
+handler = Mangum(app=app)
