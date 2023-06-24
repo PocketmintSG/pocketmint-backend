@@ -101,7 +101,7 @@ async def validate(request: Request):
     return user["uid"]
 
 
-if __name__ == "__main__":
-    uvicorn.run("main:app")
+# if __name__ == "__main__":
+#     uvicorn.run("main:app")
 
 handler = Mangum(app=app)
