@@ -10,9 +10,30 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from mangum import Mangum
 
-cred = credentials.Certificate("firebase_secrets.json")
+cred = credentials.Certificate(
+    {
+        "apiKey": "AIzaSyDe2EL4mshzuCsQoA9moiNv3uQZmkxLGXg",
+        "authDomain": "pocketmint-backend.firebaseapp.com",
+        "projectId": "pocketmint-backend",
+        "storageBucket": "pocketmint-backend.appspot.com",
+        "messagingSenderId": "49057279925",
+        "appId": "1:49057279925:web:a396421a9a99ba056ef3fc",
+        "measurementId": "G-PWTJ312C5M",
+        "databaseURL": "https://pocketmint-backend-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    }
+)
 firebase = firebase_admin.initialize_app(cred)
-pb = pyrebase.initialize_app(json.load(open("firebase_config.json")))
+pb = pyrebase.initialize_app(json.load({
+  "apiKey": "AIzaSyDe2EL4mshzuCsQoA9moiNv3uQZmkxLGXg",
+  "authDomain": "pocketmint-backend.firebaseapp.com",
+  "projectId": "pocketmint-backend",
+  "storageBucket": "pocketmint-backend.appspot.com",
+  "messagingSenderId": "49057279925",
+  "appId": "1:49057279925:web:a396421a9a99ba056ef3fc",
+  "measurementId": "G-PWTJ312C5M",
+  "databaseURL": "https://pocketmint-backend-default-rtdb.asia-southeast1.firebasedatabase.app/"
+}
+)))
 
 app = FastAPI()
 allow_all = ["*"]
