@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class LoginRequest(BaseModel):
+class AuthRequest(BaseModel):
     token: str
