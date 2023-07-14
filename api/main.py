@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi.params import Depends
 import firebase_admin
 
@@ -7,9 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from mangum import Mangum
-from api.models.auth import LoginRequest
+from pymongo import MongoClient
+from api.models.auth import AuthRequest
+from api.models.requests_models import ResponseBaseModel
+from api.types.requests_types import StatusEnum
+from api.utils.database import get_cluster_connection
+from api.utils.requests_utils import dict_to_json
 from api.utils.security import verify_token
-from api.utils.test_routes import utils_router
 
 import json
 
@@ -30,41 +35,95 @@ app.add_middleware(
     allow_headers=allow_all,
 )
 
-app.include_router(utils_router, prefix="/utils", tags=["utils"])
-
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 
-# signup endpoint
-@app.post("/signup")
-async def signup(request: Request):
-    req = await request.json()
-    email = req["email"]
-    password = req["password"]
-    if email is None or password is None:
-        return HTTPException(
-            detail={"message": "Error! Missing Email or Password"}, status_code=400
-        )
+@app.post("/register", response_model=ResponseBaseModel)
+async def signup(
+    register_details: AuthRequest,
+    cluster: MongoClient = Depends(get_cluster_connection),
+):
     try:
-        user = auth.create_user(email=email, password=password)
-        return JSONResponse(
-            content={"message": f"Successfully created user {user.uid}"},
-            status_code=200,
-        )
-    except:
-        return HTTPException(detail={"message": "Error Creating User"}, status_code=400)
-
-
-@app.post("/login")
-async def login(loginDetails: LoginRequest):
-    try:
-        user = auth.verify_id_token(loginDetails.token)
-        return JSONResponse(content={"token": "Hello world"}, status_code=200)
+        user = auth.verify_id_token(register_details.token)
     except Exception as e:
-        return HTTPException(detail={"message": e}, status_code=400)
+        return HTTPException(
+            detail={
+                "message": "Error creating user: " + e,
+                "status": StatusEnum.FAILURE,
+            },
+            status_code=400,
+        )
+
+    users_db = cluster["pocketmint"]["users"]
+    if users_db.find_one({"_id": user["uid"]}):
+        raise HTTPException(
+            detail={"message": "User already exists!", "status": StatusEnum.FAILURE},
+            status_code=400,
+        )
+
+    user_data = {
+        "_id": user.get("uid"),
+        "username": user.get("name"),
+        "email": user.get("email"),
+        "profile_picture": user.get("picture"),
+        "registered_at": datetime.now(),
+        "last_logged_in": datetime.now(),
+        "roles": ["user"],
+    }
+
+    users_db.insert_one(user_data)
+
+    return JSONResponse(
+        content={
+            "status": StatusEnum.SUCCESS,
+            "message": "Successfully created user",
+            "data": {"user": dict_to_json(user_data)},
+        },
+        status_code=200,
+    )
+
+
+@app.post("/login", response_model=ResponseBaseModel)
+async def login(
+    login_details: AuthRequest,
+    cluster: MongoClient = Depends(get_cluster_connection),
+):
+    try:
+        user = auth.verify_id_token(login_details.token)
+    except Exception as e:
+        return HTTPException(
+            detail={"message": "An error occurred: " + e, "status": StatusEnum.FAILURE},
+            status_code=400,
+        )
+
+    # Update user in database
+    user_db = cluster["pocketmint"]["users"]
+    res = user_db.update_one(
+        {"_id": user.get("uid")}, {"$set": {"last_logged_in": datetime.now()}}
+    )
+    if res.modified_count != 1:
+        raise HTTPException(
+            detail={
+                "message": "User was not found in database.",
+                "status": StatusEnum.FAILURE,
+            },
+            status_code=400,
+        )
+
+    # Find user in database
+    user = user_db.find_one({"_id": user.get("uid")})
+
+    return JSONResponse(
+        content={
+            "message": "User logged in successfully!",
+            "status": StatusEnum.SUCCESS,
+            "data": {"user": dict_to_json(user)},
+        },
+        status_code=200,
+    )
 
 
 # ping endpoint
