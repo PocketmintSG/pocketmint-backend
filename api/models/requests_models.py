@@ -1,11 +1,10 @@
-from typing import Any, Optional
-
 from pydantic import BaseModel
+from typing import TypeVar, Generic, Optional
 
-from api.types.requests_types import StatusEnum
+DataT = TypeVar("DataT")
 
 
-class ResponseBaseModel(BaseModel):
-    status: StatusEnum
+class BaseResponseModel(BaseModel, Generic[DataT]):
+    status: str
     message: str
-    data: Optional[Any]
+    data: Optional[DataT]

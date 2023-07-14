@@ -3,14 +3,15 @@ from fastapi.params import Depends
 import firebase_admin
 
 from firebase_admin import credentials, auth
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from mangum import Mangum
 from pymongo import MongoClient
 from api.models.auth import AuthRequest
-from api.models.requests_models import ResponseBaseModel
+from api.models.requests_models import BaseResponseModel
+from api.models.user import User
 from api.types.requests_types import StatusEnum
 from api.utils.database import get_cluster_connection
 from api.utils.requests_utils import dict_to_json
@@ -41,7 +42,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/register", response_model=ResponseBaseModel)
+@app.post("/register", response_model=BaseResponseModel[User])
 async def signup(
     register_details: AuthRequest,
     cluster: MongoClient = Depends(get_cluster_connection),
@@ -86,7 +87,7 @@ async def signup(
     )
 
 
-@app.post("/login", response_model=ResponseBaseModel)
+@app.post("/login", response_model=BaseResponseModel[User])
 async def login(
     login_details: AuthRequest,
     cluster: MongoClient = Depends(get_cluster_connection),
