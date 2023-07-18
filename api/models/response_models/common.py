@@ -8,3 +8,7 @@ class BaseResponseModel(BaseModel, Generic[DataT]):
     status: str
     message: str
     data: Optional[DataT]
+
+
+class EmptyResponseModel(BaseModel):
+    pass
