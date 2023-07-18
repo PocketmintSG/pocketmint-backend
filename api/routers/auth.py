@@ -1,5 +1,6 @@
 import json
 import pyrebase
+import urllib.request
 
 from datetime import datetime
 from fastapi.params import Depends
@@ -8,11 +9,12 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from pymongo import MongoClient
+import requests
 from api.models.request_models.auth import (
     AuthRequest,
     ProfileChangePasswordRequest,
 )
-from api.models.response_models.common import BaseResponseModel, EmptyResponseModel
+from api.models.response_models.common import BaseResponseModel, GeneralResponse
 from api.models.user import User
 from api.types.requests_types import StatusEnum
 from api.utils.database import get_cluster_connection
@@ -36,17 +38,19 @@ async def signup(
         user = auth.verify_id_token(register_details.token)
     except Exception as e:
         return HTTPException(
-            detail={
-                "message": "Error creating user: " + e,
-                "status": StatusEnum.FAILURE,
-            },
+            detail=BaseResponseModel(
+                message="Error creating user: " + e,
+                status=StatusEnum.FAILURE,
+            ),
             status_code=400,
         )
 
     users_db = cluster["pocketmint"]["users"]
     if users_db.find_one({"_id": user["uid"]}):
         raise HTTPException(
-            detail={"message": "User already exists!", "status": StatusEnum.FAILURE},
+            detail=BaseResponseModel(
+                message="User already exists!", status=StatusEnum.FAILURE
+            ),
             status_code=400,
         )
 
@@ -63,11 +67,11 @@ async def signup(
     users_db.insert_one(user_data)
 
     return JSONResponse(
-        content={
-            "status": StatusEnum.SUCCESS,
-            "message": "Successfully created user",
-            "data": {"user": dict_to_json(user_data)},
-        },
+        content=BaseResponseModel(
+            status=StatusEnum.SUCCESS,
+            message="Successfully created user",
+            data={"user": dict_to_json(user_data)},
+        ),
         status_code=200,
     )
 
@@ -81,7 +85,9 @@ async def login(
         user = auth.verify_id_token(login_details.token)
     except Exception as e:
         return HTTPException(
-            detail={"message": "An error occurred: " + e, "status": StatusEnum.FAILURE},
+            detail=BaseResponseModel(
+                message="An error occurred: " + e, status=StatusEnum.FAILURE
+            ),
             status_code=400,
         )
 
@@ -92,10 +98,10 @@ async def login(
     )
     if res.modified_count != 1:
         raise HTTPException(
-            detail={
-                "message": "User was not found in database.",
-                "status": StatusEnum.FAILURE,
-            },
+            detail=BaseResponseModel(
+                message="User was not found in database.",
+                status=StatusEnum.FAILURE,
+            ),
             status_code=400,
         )
 
@@ -103,18 +109,18 @@ async def login(
     user = user_db.find_one({"_id": user.get("uid")})
 
     return JSONResponse(
-        content={
-            "message": "User logged in successfully!",
-            "status": StatusEnum.SUCCESS,
-            "data": {"user": dict_to_json(user)},
-        },
+        content=BaseResponseModel(
+            message="User logged in successfully!",
+            status=StatusEnum.SUCCESS,
+            data={"user": dict_to_json(user)},
+        ),
         status_code=200,
     )
 
 
 @router.post(
     "/profile_change_password",
-    # response_model=BaseResponseModel[EmptyResponseModel],
+    # response_model=BaseResponseModel[GeneralResponse],
     dependencies=[Depends(verify_token)],
 )
 async def profile_change(
@@ -131,22 +137,33 @@ async def profile_change(
     # Check if old password is correct
     try:
         user = pb.auth().sign_in_with_email_and_password(email, old_password)
-    except Exception as e:
-        return HTTPException(
-            content={
-                "message": "An error occurred: " + str(e),
-                "status": StatusEnum.FAILURE,
-            },
-            status_code=400,
-        )
+    except requests.exceptions.HTTPError as e:
+        error_message = json.loads(e.args[1]).get("error").get("message")
+        if error_message == "INVALID_PASSWORD":
+            return HTTPException(
+                detail=BaseResponseModel(
+                    message="Provided old password is incorrect!",
+                    status=StatusEnum.FAILURE,
+                ),
+                status_code=400,
+            )
+        else:
+            return HTTPException(
+                detail=BaseResponseModel(
+                    message="Some error occurred!",
+                    status=StatusEnum.FAILURE,
+                    errors=[{"message": str(e), "status": StatusEnum.FAILURE}],
+                ),
+                status_code=400,
+            )
 
     # Check if new password and confirm new password match
     if new_password != confirm_new_password:
         return HTTPException(
-            detail={
-                "message": "Provided new passwords do not match!",
-                "status": StatusEnum.FAILURE,
-            },
+            detail=BaseResponseModel(
+                message="Provided new passwords do not match!",
+                status=StatusEnum.FAILURE,
+            ),
             status_code=400,
         )
 
@@ -155,17 +172,17 @@ async def profile_change(
         auth.update_user(user.get("localId"), password=new_password)
     except Exception as e:
         return HTTPException(
-            detail={
-                "message": "An error occurred: " + str(e),
-                "status": StatusEnum.FAILURE,
-            },
+            detail=BaseResponseModel(
+                message="An error occurred: " + str(e),
+                status=StatusEnum.FAILURE,
+            ),
             status_code=400,
         )
 
     return JSONResponse(
-        content={
-            "message": "Successfully changed password!",
-            "status": StatusEnum.SUCCESS,
-        },
+        content=BaseResponseModel(
+            message="Successfully changed password!",
+            status=StatusEnum.SUCCESS,
+        ),
         status_code=200,
     )
