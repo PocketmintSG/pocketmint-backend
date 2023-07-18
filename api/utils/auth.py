@@ -1,5 +1,5 @@
 from typing import List
-from api.models.auth import Role
+from api.models.response_models.auth import Role
 from api.models.user import User
 from api.types.auth import ActionsEnum, OrganizationRoles, ResourcesEnum
 
