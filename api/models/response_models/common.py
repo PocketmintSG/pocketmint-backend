@@ -1,20 +1,36 @@
 from pydantic import BaseModel
-from typing import List, TypeVar, Generic, Optional
+from typing import Any, TypeVar, Generic, Optional
+from fastapi import HTTPException
+
+from api.types.requests_types import StatusEnum
 
 DataT = TypeVar("DataT")
-
-
-class BaseErrorModel(BaseModel):
-    message: str
-    status: Optional[str]
 
 
 class BaseResponseModel(BaseModel, Generic[DataT]):
     status: str
     message: str
     data: Optional[DataT]
-    errors: Optional[List[BaseErrorModel]]
 
 
 class GeneralResponse(BaseModel):
     message: str
+
+
+class GeneralErrorResponse(BaseModel):
+    error: str
+    data: Optional[Any]
+
+
+class BaseHTTPException(HTTPException):
+    def __init__(
+        self,
+        status_code: int,
+        message: str,
+        status: StatusEnum,
+        data: Optional[GeneralErrorResponse] = None,
+    ):
+        super().__init__(
+            status_code=status_code,
+            detail=BaseResponseModel(message=message, status=status, data=data).dict(),
+        )

@@ -6,7 +6,7 @@ from firebase_admin import credentials
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from api.configs.constants import API_ROUTER_PREFIX
+from api.configs.constants.auth import API_ROUTER_PREFIX
 from api.utils.security import verify_token
 from api.routers.router import api_router
 from mangum import Mangum

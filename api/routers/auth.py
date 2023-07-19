@@ -1,6 +1,5 @@
 import json
 import pyrebase
-import urllib.request
 
 from datetime import datetime
 from fastapi.params import Depends
@@ -10,11 +9,18 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from pymongo import MongoClient
 import requests
+from api.configs.constants.exceptions import (
+    GENERIC_EXCEPTION_MESSAGE,
+)
 from api.models.request_models.auth import (
     AuthRequest,
     ProfileChangePasswordRequest,
 )
-from api.models.response_models.common import BaseResponseModel, GeneralResponse
+from api.models.response_models.common import (
+    BaseHTTPException,
+    BaseResponseModel,
+    GeneralResponse,
+)
 from api.models.user import User
 from api.types.requests_types import StatusEnum
 from api.utils.database import get_cluster_connection
@@ -120,13 +126,10 @@ async def login(
 
 @router.post(
     "/profile_change_password",
-    # response_model=BaseResponseModel[GeneralResponse],
+    response_model=BaseResponseModel[GeneralResponse],
     dependencies=[Depends(verify_token)],
 )
-async def profile_change(
-    profile_change_password_details: ProfileChangePasswordRequest,
-    cluster: MongoClient = Depends(get_cluster_connection),
-):
+async def profile_change(profile_change_password_details: ProfileChangePasswordRequest):
     email, old_password, new_password, confirm_new_password = (
         profile_change_password_details.email,
         profile_change_password_details.old_password,
@@ -140,30 +143,24 @@ async def profile_change(
     except requests.exceptions.HTTPError as e:
         error_message = json.loads(e.args[1]).get("error").get("message")
         if error_message == "INVALID_PASSWORD":
-            return HTTPException(
-                detail=BaseResponseModel(
-                    message="Provided old password is incorrect!",
-                    status=StatusEnum.FAILURE,
-                ),
+            raise BaseHTTPException(
                 status_code=400,
+                message="Provided old password is incorrect!",
+                status=StatusEnum.FAILURE,
             )
         else:
-            return HTTPException(
-                detail=BaseResponseModel(
-                    message="Some error occurred!",
-                    status=StatusEnum.FAILURE,
-                    errors=[{"message": str(e), "status": StatusEnum.FAILURE}],
-                ),
+            raise BaseHTTPException(
+                message=GENERIC_EXCEPTION_MESSAGE,
+                status=StatusEnum.FAILURE,
                 status_code=400,
+                data={"error": str(e)},
             )
 
     # Check if new password and confirm new password match
     if new_password != confirm_new_password:
-        return HTTPException(
-            detail=BaseResponseModel(
-                message="Provided new passwords do not match!",
-                status=StatusEnum.FAILURE,
-            ),
+        raise BaseHTTPException(
+            message="Provided new passwords do not match!",
+            status=StatusEnum.FAILURE,
             status_code=400,
         )
 
@@ -171,18 +168,17 @@ async def profile_change(
     try:
         auth.update_user(user.get("localId"), password=new_password)
     except Exception as e:
-        return HTTPException(
-            detail=BaseResponseModel(
-                message="An error occurred: " + str(e),
-                status=StatusEnum.FAILURE,
-            ),
+        raise BaseHTTPException(
+            message=GENERIC_EXCEPTION_MESSAGE,
+            status=StatusEnum.FAILURE,
             status_code=400,
+            data={"error": str(e)},
         )
 
     return JSONResponse(
         content=BaseResponseModel(
             message="Successfully changed password!",
             status=StatusEnum.SUCCESS,
-        ),
+        ).dict(),
         status_code=200,
     )
