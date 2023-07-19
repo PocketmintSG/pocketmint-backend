@@ -43,20 +43,17 @@ async def signup(
     try:
         user = auth.verify_id_token(register_details.token)
     except Exception as e:
-        return HTTPException(
-            detail=BaseResponseModel(
-                message="Error creating user: " + e,
-                status=StatusEnum.FAILURE,
-            ),
+        raise BaseHTTPException(
+            message="Error creating user: " + e,
+            status=StatusEnum.FAILURE,
             status_code=400,
         )
 
     users_db = cluster["pocketmint"]["users"]
     if users_db.find_one({"_id": user["uid"]}):
-        raise HTTPException(
-            detail=BaseResponseModel(
-                message="User already exists!", status=StatusEnum.FAILURE
-            ),
+        raise BaseHTTPException(
+            message="User already exists!",
+            status=StatusEnum.FAILURE,
             status_code=400,
         )
 
@@ -90,10 +87,9 @@ async def login(
     try:
         user = auth.verify_id_token(login_details.token)
     except Exception as e:
-        return HTTPException(
-            detail=BaseResponseModel(
-                message="An error occurred: " + e, status=StatusEnum.FAILURE
-            ),
+        raise BaseHTTPException(
+            message="An error occurred: " + e,
+            status=StatusEnum.FAILURE,
             status_code=400,
         )
 
@@ -103,11 +99,9 @@ async def login(
         {"_id": user.get("uid")}, {"$set": {"last_logged_in": datetime.now()}}
     )
     if res.modified_count != 1:
-        raise HTTPException(
-            detail=BaseResponseModel(
-                message="User was not found in database.",
-                status=StatusEnum.FAILURE,
-            ),
+        raise BaseHTTPException(
+            message="User was not found in database.",
+            status=StatusEnum.FAILURE,
             status_code=400,
         )
 
