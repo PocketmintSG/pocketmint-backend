@@ -1,7 +1,7 @@
 from typing import List
-from api.models.response_models.auth import Role
 from api.models.user import User
 from api.types.auth import ActionsEnum, OrganizationRoles, ResourcesEnum
+from api.utils.database import get_cluster_connection
 
 
 def is_allowed(
@@ -55,3 +55,10 @@ def get_org_role(actor: User) -> List[str]:
 def is_same_organization(resource_owner_uid: str, actor_uid: str):
     """Returns True if an IA has a User in their organization"""
     return True
+
+
+def get_user(uid: str):
+    cluster = get_cluster_connection()
+    user_db = cluster["pocketmint"]["users"]
+    res = user_db.find_one({"_id": uid})
+    return res
