@@ -17,6 +17,7 @@ from api.configs.constants.exceptions import (
 )
 from api.models.request_models.auth import (
     AuthRequest,
+    AuthRequestWithName,
     ProfileChangePasswordRequest,
     ProfileUpdateRequest,
 )
@@ -43,7 +44,7 @@ pb = pyrebase.initialize_app(config)
 
 @router.post("/register", response_model=BaseResponseModel[User])
 async def signup(
-    register_details: AuthRequest,
+    register_details: AuthRequestWithName,
     cluster: MongoClient = Depends(get_cluster_connection),
 ):
     try:
@@ -65,9 +66,9 @@ async def signup(
 
     user_data = {
         "_id": user.get("uid"),
-        "username": user.get("name"),
-        "first_name": user.get("first_name"),
-        "last_name": user.get("last_name"),
+        "username": register_details.username,
+        "first_name": register_details.first_name,
+        "last_name": register_details.last_name,
         "email": user.get("email"),
         "profile_picture": user.get("picture"),
         "registered_at": datetime.now(),

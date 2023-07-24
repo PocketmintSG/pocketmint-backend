@@ -6,6 +6,12 @@ class AuthRequest(BaseModel):
     token: str
 
 
+class AuthRequestWithName(AuthRequest):
+    username: str
+    first_name: str
+    last_name: str
+
+
 class ProfileChangePasswordRequest(BaseModel):
     email: str
     old_password: str
