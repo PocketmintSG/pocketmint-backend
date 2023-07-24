@@ -5,10 +5,9 @@ import magic
 
 from datetime import datetime
 from fastapi.params import Depends
-from firebase_admin import auth
+from firebase_admin import auth, db
 from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import HTTPException
 from pymongo import MongoClient
 from io import BytesIO
 from PIL import Image
@@ -23,11 +22,13 @@ from api.models.request_models.auth import (
 )
 from api.models.response_models.common import (
     BaseHTTPException,
+    BaseJSONResponse,
     BaseResponseModel,
     GeneralResponse,
 )
 from api.models.user import User
 from api.types.requests_types import StatusEnum
+from api.utils.auth import get_user
 from api.utils.database import get_cluster_connection
 from api.utils.requests_utils import dict_to_json
 from api.utils.security import verify_token
@@ -93,18 +94,21 @@ async def login(
 ):
     try:
         user = auth.verify_id_token(login_details.token)
+        uid = user.get("uid")
+        user = auth.get_user(uid)
+        revocation_second = user.tokens_valid_after_timestamp / 1000
+        metadata_ref = db.reference("metadata/" + uid)
+        metadata_ref.set({"revokeTime": revocation_second})
     except Exception as e:
         raise BaseHTTPException(
-            message="An error occurred: " + e,
+            message="An error occurred: " + str(e),
             status=StatusEnum.FAILURE,
             status_code=400,
         )
 
     # Update user in database
     user_db = cluster["pocketmint"]["users"]
-    res = user_db.update_one(
-        {"_id": user.get("uid")}, {"$set": {"last_logged_in": datetime.now()}}
-    )
+    res = user_db.update_one({"_id": uid}, {"$set": {"last_logged_in": datetime.now()}})
     if res.modified_count != 1:
         raise BaseHTTPException(
             message="User was not found in database.",
@@ -113,15 +117,12 @@ async def login(
         )
 
     # Find user in database
-    user = user_db.find_one({"_id": user.get("uid")})
+    user = user_db.find_one({"_id": uid})
 
-    return JSONResponse(
-        content=BaseResponseModel(
-            message="User logged in successfully!",
-            status=StatusEnum.SUCCESS,
-            data={"user": dict_to_json(user)},
-        ),
-        status_code=200,
+    return BaseJSONResponse(
+        status=StatusEnum.SUCCESS,
+        message="User logged in successfully!",
+        data={"user": dict_to_json(user)},
     )
 
 
@@ -176,12 +177,9 @@ async def profile_change(profile_change_password_details: ProfileChangePasswordR
             data={"error": str(e)},
         )
 
-    return JSONResponse(
-        content=BaseResponseModel(
-            message="Successfully changed password!",
-            status=StatusEnum.SUCCESS,
-        ).dict(),
-        status_code=200,
+    return BaseJSONResponse(
+        status=StatusEnum.SUCCESS,
+        message="Successfully changed password!",
     )
 
 
@@ -251,10 +249,8 @@ async def update_profile(
 
     users_db.update_one({"uid": details.get("uid")}, {"$set": user_data})
 
-    return JSONResponse(
-        content=BaseResponseModel(
-            message="Profile successfully updated!",
-            status=StatusEnum.SUCCESS,
-        ).dict(),
-        status_code=200,
+    return BaseJSONResponse(
+        message="Profile successfully updated!",
+        status=StatusEnum.SUCCESS,
+        data={"user": get_user(details.get("uid"))},
     )
