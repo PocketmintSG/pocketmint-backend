@@ -77,12 +77,10 @@ async def signup(
 
     users_db.insert_one(user_data)
 
-    return JSONResponse(
-        content=BaseResponseModel(
-            status=StatusEnum.SUCCESS,
-            message="Successfully created user",
-            data={"user": dict_to_json(user_data)},
-        ),
+    return BaseJSONResponse(
+        status=StatusEnum.SUCCESS,
+        message="Successfully created user",
+        data={"user": dict_to_json(user_data)},
         status_code=200,
     )
 
