@@ -16,5 +16,13 @@ async def verify_token(auth_token: str = Header(...)):
     )
     try:
         auth.verify_id_token(auth_token)
+    except auth.ExpiredIdTokenError:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Credentials have expired."
+        )
+    except auth.RevokedIdTokenError:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="User needs to reauthenticate."
+        )
     except Exception as e:
         raise credentials_exception
