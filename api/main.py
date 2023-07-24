@@ -17,13 +17,19 @@ with open("firebase_secrets.json") as json_file:
 
 cred = credentials.Certificate(cert)
 
-firebase = firebase_admin.initialize_app(cred)
+firebase = firebase_admin.initialize_app(
+    cred,
+    {
+        "databaseURL": "https://pocketmint-frontend-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    },
+)
 
 app = FastAPI()
 allow_all = ["*"]
+origins = ["http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_all,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=allow_all,
     allow_headers=allow_all,
