@@ -42,7 +42,7 @@ class BaseJSONResponse(JSONResponse):
         self,
         status: StatusEnum,
         message: str,
-        data: Optional[GeneralResponse],
+        data: Optional[GeneralResponse] = None,
         status_code: int = 200,
     ):
         super().__init__(

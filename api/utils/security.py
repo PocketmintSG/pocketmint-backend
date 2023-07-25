@@ -4,25 +4,36 @@ from firebase_admin import auth
 
 from starlette.status import HTTP_403_FORBIDDEN
 
+from api.models.response_models.common import BaseHTTPException
+from api.types.requests_types import StatusEnum
 
-async def verify_token(auth_token: str = Header(...)):
-    """Verifies if the ID token passed in the header of a request is valid.
 
-    NOTE: The request is expected to have a header called 'auth-token'."""
-    if not auth_token:
-        raise HTTPException(status_code=400, detail="Invalid headers provided")
-    credentials_exception = HTTPException(
-        status_code=HTTP_403_FORBIDDEN, detail="Invalid credentials provided."
-    )
+async def verify_token(authorization: str = Header(...)):
+    """Verifies if the ID token passed in the header of a request is valid."""
+
+    if not authorization:
+        raise BaseHTTPException(
+            status_code=400,
+            message="Invalid headers provided",
+            status=StatusEnum.FAILURE,
+        )
     try:
-        auth.verify_id_token(auth_token)
+        auth.verify_id_token(authorization.split(" ")[1])
     except auth.ExpiredIdTokenError:
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN, detail="Credentials have expired."
+        raise BaseHTTPException(
+            status_code=400,
+            message="Credentials has expired",
+            status=StatusEnum.FAILURE,
         )
     except auth.RevokedIdTokenError:
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN, detail="User needs to reauthenticate."
+        raise BaseHTTPException(
+            status_code=400,
+            message="User needs to reauthenticate",
+            status=StatusEnum.FAILURE,
         )
     except Exception as e:
-        raise credentials_exception
+        raise BaseHTTPException(
+            status_code=400,
+            message="An error occurred: " + str(e),
+            status=StatusEnum.FAILURE,
+        )
