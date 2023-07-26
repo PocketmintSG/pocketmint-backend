@@ -1,6 +1,5 @@
 import json
 import pyrebase
-import boto3
 from datetime import datetime
 from fastapi.params import Depends
 from firebase_admin import auth, db
@@ -187,13 +186,7 @@ async def update_profile(
     cluster: MongoClient = Depends(get_cluster_connection),
 ):
     users_db = cluster["pocketmint"]["users"]
-    if users_db.find_one({"_id": details["uid"]}):
-        raise BaseHTTPException(
-            message="User already exists!",
-            status=StatusEnum.FAILURE,
-            status_code=400,
-        )
-
+    details = details.dict()
     user_data = {
         "username": details.get("username"),
         "first_name": details.get("first_name"),
@@ -202,12 +195,17 @@ async def update_profile(
         "profile_picture": details.get("profile_picture_url"),
     }
 
-    print(user_data)
+    auth.update_user(
+        details.get("uid"),
+        display_name=details.get("username"),
+        email=details.get("email"),
+        photo_url=details.get("profile_picture_url"),
+    )
 
-    # users_db.update_one({"uid": details.get("uid")}, {"$set": user_data})
+    users_db.update_one({"_id": details.get("uid")}, {"$set": user_data})
 
     return BaseJSONResponse(
         message="Profile successfully updated!",
         status=StatusEnum.SUCCESS,
-        data={"user": get_user(details.get("uid"))},
+        data={"user": dict_to_json(get_user(details.get("uid")))},
     )
