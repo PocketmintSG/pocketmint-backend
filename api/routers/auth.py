@@ -1,16 +1,11 @@
 import json
 import pyrebase
 import boto3
-import magic
-
 from datetime import datetime
 from fastapi.params import Depends
 from firebase_admin import auth, db
 from fastapi import APIRouter, UploadFile, File
-from fastapi.responses import JSONResponse
 from pymongo import MongoClient
-from io import BytesIO
-from PIL import Image
 import requests
 from api.configs.constants.exceptions import (
     GENERIC_EXCEPTION_MESSAGE,
@@ -182,20 +177,6 @@ async def profile_change(profile_change_password_details: ProfileChangePasswordR
     )
 
 
-async def compress_image(image_data: bytes, quality: int = 20):
-    img = Image.open(BytesIO(image_data))
-    buffer = BytesIO()
-    img.save(buffer, format="JPEG", quality=quality)
-    return buffer.getvalue()
-
-
-async def validate_image(image_data: bytes):
-    file_type = magic.from_buffer(image_data, mime=True)
-    if not file_type.startswith("image"):
-        raise ValueError("Uploaded file is not an image")
-    return image_data
-
-
 @router.post(
     "/update_profile",
     response_model=BaseResponseModel[GeneralResponse],
@@ -203,33 +184,8 @@ async def validate_image(image_data: bytes):
 )
 async def update_profile(
     details: ProfileUpdateRequest,
-    imageFile: UploadFile = File(None),
     cluster: MongoClient = Depends(get_cluster_connection),
 ):
-    image_data = await imageFile.read()
-    try:
-        image_data = await validate_image(image_data)
-    except ValueError as e:
-        raise BaseHTTPException(
-            message=str(e),
-            status=StatusEnum.FAILURE,
-            status_code=400,
-        )
-
-    try:
-        compressed_image_data = await compress_image(image_data)
-    except Exception as e:
-        raise BaseHTTPException(
-            status_code=400, message=str(e), status=StatusEnum.FAILURE
-        )
-
-    s3 = boto3.client("s3")
-    s3.Bucket("pocketmint-backend-images").put_object(
-        Key=imageFile.filename, Body=BytesIO(compressed_image_data)
-    )
-
-    profile_pic_url = ""
-
     users_db = cluster["pocketmint"]["users"]
     if users_db.find_one({"_id": details["uid"]}):
         raise BaseHTTPException(
@@ -239,14 +195,16 @@ async def update_profile(
         )
 
     user_data = {
-        "username": details.get("name"),
+        "username": details.get("username"),
         "first_name": details.get("first_name"),
         "last_name": details.get("last_name"),
         "email": details.get("email"),
-        "profile_picture": profile_pic_url,
+        "profile_picture": details.get("profile_picture_url"),
     }
 
-    users_db.update_one({"uid": details.get("uid")}, {"$set": user_data})
+    print(user_data)
+
+    # users_db.update_one({"uid": details.get("uid")}, {"$set": user_data})
 
     return BaseJSONResponse(
         message="Profile successfully updated!",

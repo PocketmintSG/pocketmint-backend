@@ -21,7 +21,8 @@ class ProfileChangePasswordRequest(BaseModel):
 
 class ProfileUpdateRequest(BaseModel):
     uid: str
-    username: Optional[str]
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[str]
+    username: str
+    first_name: str
+    last_name: str
+    profile_picture_url: str
+    email: str

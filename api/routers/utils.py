@@ -24,7 +24,6 @@ async def upload_image(
     image_file: UploadFile = File(...),
 ):
     image_data = await image_file.read()
-    print(type(image_data))
     try:
         image_data = await validate_image(image_data)
     except ValueError as e:
