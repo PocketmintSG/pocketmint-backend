@@ -1,14 +1,13 @@
 from datetime import datetime
 from enum import Enum
 import json
-from bson import json_util
+from bson import ObjectId, json_util
 
 
 def dict_to_json(dct):
     for k, v in dct.items():
-        if isinstance(v, datetime):
+        if isinstance(v, datetime) or isinstance(v, ObjectId):
             dct[k] = str(dct[k])
-
     return dct
 
 
