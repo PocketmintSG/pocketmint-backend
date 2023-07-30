@@ -12,7 +12,6 @@ class BaseResponseModel(BaseModel, Generic[DataT]):
     status: StatusEnum
     message: str
     data: Optional[DataT]
-    status_code: Optional[int]
 
 
 class GeneralResponse(BaseModel):
@@ -49,8 +48,6 @@ class BaseJSONResponse(JSONResponse):
         status_code: int = 200,
     ):
         super().__init__(
-            content=BaseResponseModel(
-                message=message, status=status, data=data, status_code=status_code
-            ).dict(),
+            content=BaseResponseModel(message=message, status=status, data=data).dict(),
             status_code=status_code,
         )
