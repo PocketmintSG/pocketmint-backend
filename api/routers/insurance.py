@@ -3,6 +3,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 from api.models.request_models.insurance import (
+    DeleteInsuranceRequest,
     ListInsuranceRequest,
     UpdateInsuranceRequest,
 )
@@ -150,8 +151,25 @@ async def update_insurance(
     )
 
 
-@router.post("/delete_insurance")
-async def delete_insurance():
+@router.post(
+    "/delete_insurance",
+    response_model=BaseResponseModel[InsuranceModel],
+    dependencies=[Depends(verify_token)],
+)
+async def delete_insurance(
+    insurance_details: DeleteInsuranceRequest,
+    cluster: MongoClient = Depends(get_cluster_connection),
+):
+    details_dict = insurance_details.dict()
+    insurance_db = cluster["pocketmint"]["insurance_details"]
+    if not insurance_db.find_one({"_id": ObjectId(details_dict["insurance_id"])}):
+        raise BaseHTTPException(
+            status=StatusEnum.FAILURE,
+            status_code=404,
+            message="Insurance not found!",
+        )
+
+    insurance_db.delete_one({"_id": ObjectId(details_dict["insurance_id"])})
     return BaseJSONResponse(
         status=StatusEnum.SUCCESS, message="Insurance deleted!", status_code=200
     )
