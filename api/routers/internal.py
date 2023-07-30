@@ -4,7 +4,7 @@ import os
 
 from firebase_admin import credentials
 from fastapi import APIRouter
-from api.models.response_models.common import BaseJSONResponse
+from api.models.response_models.common import BaseHTTPException, BaseJSONResponse
 from api.types.requests_types import StatusEnum
 from dotenv import load_dotenv
 
@@ -29,4 +29,14 @@ async def get_token():
         message="Token retrieved!",
         status_code=200,
         data={"token": "Bearer " + user["idToken"]},
+    )
+
+
+@router.get("/test_response")
+async def test_response():
+    raise BaseHTTPException(
+        status=StatusEnum.SUCCESS,
+        message="Test response",
+        status_code=400,
+        data={"Test Key": "Test Value"},
     )
