@@ -12,6 +12,7 @@ class BaseResponseModel(BaseModel, Generic[DataT]):
     status: StatusEnum
     message: str
     data: Optional[DataT]
+    status_code: Optional[int]
 
 
 class GeneralResponse(BaseModel):
