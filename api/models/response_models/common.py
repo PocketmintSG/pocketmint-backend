@@ -49,6 +49,8 @@ class BaseJSONResponse(JSONResponse):
         status_code: int = 200,
     ):
         super().__init__(
-            content=BaseResponseModel(message=message, status=status, data=data).dict(),
+            content=BaseResponseModel(
+                message=message, status=status, data=data, status_code=status_code
+            ).dict(),
             status_code=status_code,
         )

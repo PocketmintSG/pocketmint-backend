@@ -55,3 +55,16 @@ class InsuranceModel(BaseModel):
     insurance_coverage: InsuranceModelInsuranceCoverage
     agent_details: InsuranceModelAgentDetails
     description: InsuranceModelDescription
+
+
+class InsuranceModelMinified(BaseModel):
+    """Bare minimum required to display one insurance as a table"""
+
+    _id: str
+    policy_name: str
+    policy_insurer: str
+    policy_insurance_types: str
+    agent_name: str
+    agent_contact_number: str
+    beneficiary: str
+    insured_by: str
