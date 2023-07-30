@@ -2,7 +2,10 @@ from typing import List
 from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
-from api.models.request_models.insurance import ListInsuranceRequest
+from api.models.request_models.insurance import (
+    ListInsuranceRequest,
+    UpdateInsuranceRequest,
+)
 
 from api.models.response_models.common import (
     BaseHTTPException,
@@ -120,8 +123,28 @@ async def list_insurance(
     )
 
 
-@router.post("/update_insurance")
-async def update_insurance():
+@router.post(
+    "/update_insurance",
+    response_model=BaseResponseModel[InsuranceModel],
+    dependencies=[Depends(verify_token)],
+)
+async def update_insurance(
+    insurance_details: UpdateInsuranceRequest,
+    cluster: MongoClient = Depends(get_cluster_connection),
+):
+    details_dict = insurance_details.dict()
+    insurance_db = cluster["pocketmint"]["insurance_details"]
+    if not insurance_db.find_one({"_id": ObjectId(details_dict["insurance_id"])}):
+        raise BaseHTTPException(
+            status=StatusEnum.FAILURE,
+            status_code=404,
+            message="Insurance not found!",
+        )
+    res = model_to_dict(insurance_details)["updated_details"]
+    insurance_db.update_one(
+        {"_id": ObjectId(details_dict["insurance_id"])}, {"$set": res}
+    )
+
     return BaseJSONResponse(
         status=StatusEnum.SUCCESS, message="Insurance updated!", status_code=200
     )
