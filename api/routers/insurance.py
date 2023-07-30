@@ -1,16 +1,18 @@
+from typing import List
 from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
+from api.models.request_models.insurance import ListInsuranceRequest
 
 from api.models.response_models.common import (
     BaseHTTPException,
     BaseJSONResponse,
     BaseResponseModel,
 )
-from api.models.response_models.insurance import InsuranceModel
+from api.models.response_models.insurance import InsuranceModel, InsuranceModelMinified
 from api.types.requests_types import StatusEnum
 from api.utils.database import get_cluster_connection
-from api.utils.requests_utils import dict_to_json, model_to_dict
+from api.utils.misc import dict_to_json, get_chunks, model_to_dict
 from api.utils.security import verify_token
 
 router = APIRouter()
@@ -49,7 +51,6 @@ async def read_insurance(
 ):
     insurance_db = cluster["pocketmint"]["insurance_details"]
     res = insurance_db.find_one({"_id": ObjectId(insurance_id)})
-    print(res)
     if not res:
         raise BaseHTTPException(
             status=StatusEnum.FAILURE,
@@ -65,10 +66,57 @@ async def read_insurance(
     )
 
 
-@router.post("/list_insurance")
-async def list_insurance():
+@router.post(
+    "/list_insurance",
+    response_model=BaseResponseModel[List[InsuranceModelMinified]],
+    dependencies=[Depends(verify_token)],
+)
+async def list_insurance(
+    insurance_details: ListInsuranceRequest,
+    cluster: MongoClient = Depends(get_cluster_connection),
+):
+    """Returns the minimum information required to show insurance information. Only returns name, insurer, type, agent details, beneficiary, and insured by.
+
+    When a user opens a table row as a collapsible, then the full information is fetched using the get_insurance endpoint.
+
+    Filtering in the table is done in the frontend for now. Right now, we only allow users to filter by insurance name.
+    """
+    insurance_details = insurance_details.dict()
+    insurance_db = cluster["pocketmint"]["insurance_details"]
+    all_insurance = list(insurance_db.find({"uid": insurance_details["user_id"]}))
+    res = []
+    if all_insurance != None:
+        # Extract the bare minimum information
+        # Each insurance policy can contain one or more insurance coverage types. We will display a truncated list of all coverage types covered in each insurance policy.
+        for insurance in all_insurance:
+            res.append(
+                {
+                    "_id": str(insurance["_id"]),
+                    "policy_name": insurance["policy_details"]["insurance_name"],
+                    "policy_insurer": insurance["policy_details"]["insurer"],
+                    "policy_insurance_types": list(
+                        map(
+                            lambda x: x["insurance_type"],
+                            insurance["insurance_coverage"]["coverage_details"],
+                        )
+                    ),
+                    "agent_name": insurance["agent_details"]["name"],
+                    "agent_contact_number": insurance["agent_details"][
+                        "contact_number"
+                    ],
+                    "agent_contact_number": insurance["agent_details"][
+                        "contact_number"
+                    ],
+                    "beneficiary": insurance["policy_details"]["beneficiary"],
+                    # "insured_by": insurance["policy_details"]["beneficiary"],
+                }
+            )
+
+    chunks = get_chunks(res, insurance_details["pagination_chunk_size"])
     return BaseJSONResponse(
-        status=StatusEnum.SUCCESS, message="Insurance listed!", status_code=200
+        status=StatusEnum.SUCCESS,
+        message="Insurance listed!",
+        data=chunks,
     )
 
 
