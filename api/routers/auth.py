@@ -25,7 +25,7 @@ from api.models.user import User
 from api.types.requests_types import StatusEnum
 from api.utils.auth import get_user
 from api.utils.database import get_cluster_connection
-from api.utils.requests_utils import dict_to_json
+from api.utils.misc import dict_to_json
 from api.utils.security import verify_token
 
 with open("firebase_config.json") as config_file:
