@@ -17,3 +17,7 @@ class UpdateInsuranceRequest(BaseModel):
 class DeleteInsuranceRequest(BaseModel):
     user_id: str
     insurance_id: str
+
+
+class GetInsuranceSummariesRequest(BaseModel):
+    user_id: str

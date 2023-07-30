@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 from api.models.request_models.insurance import (
     DeleteInsuranceRequest,
+    GetInsuranceSummariesRequest,
     ListInsuranceRequest,
     UpdateInsuranceRequest,
 )
@@ -14,6 +15,12 @@ from api.models.response_models.common import (
     BaseResponseModel,
 )
 from api.models.response_models.insurance import InsuranceModel, InsuranceModelMinified
+from api.types.insurance import (
+    GeneralInsurance,
+    HealthInsurance,
+    InvestmentInsurance,
+    LifeInsurance,
+)
 from api.types.requests_types import StatusEnum
 from api.utils.database import get_cluster_connection
 from api.utils.misc import dict_to_json, get_chunks, model_to_dict
@@ -147,7 +154,10 @@ async def update_insurance(
     )
 
     return BaseJSONResponse(
-        status=StatusEnum.SUCCESS, message="Insurance updated!", status_code=200
+        status=StatusEnum.SUCCESS,
+        message="Insurance updated!",
+        status_code=200,
+        data=res,
     )
 
 
@@ -162,7 +172,10 @@ async def delete_insurance(
 ):
     details_dict = insurance_details.dict()
     insurance_db = cluster["pocketmint"]["insurance_details"]
-    if not insurance_db.find_one({"_id": ObjectId(details_dict["insurance_id"])}):
+    deleted_insurance = insurance_db.find_one(
+        {"_id": ObjectId(details_dict["insurance_id"])}
+    )
+    if not deleted_insurance:
         raise BaseHTTPException(
             status=StatusEnum.FAILURE,
             status_code=404,
@@ -171,5 +184,205 @@ async def delete_insurance(
 
     insurance_db.delete_one({"_id": ObjectId(details_dict["insurance_id"])})
     return BaseJSONResponse(
-        status=StatusEnum.SUCCESS, message="Insurance deleted!", status_code=200
+        status=StatusEnum.SUCCESS,
+        message="Insurance deleted!",
+        status_code=200,
+        data=deleted_insurance,
+    )
+
+
+@router.post(
+    "/get_insurance_summaries",
+    response_model=BaseResponseModel[InsuranceModel],
+    dependencies=[Depends(verify_token)],
+)
+async def get_insurance_summaries(
+    insurance_details: GetInsuranceSummariesRequest,
+    cluster: MongoClient = Depends(get_cluster_connection),
+):
+    details_dict = insurance_details.dict()
+    insurance_db = cluster["pocketmint"]["insurance_details"]
+    user_insurances = list(insurance_db.find({"uid": details_dict["user_id"]}))
+
+    data = {
+        "insurance_coverage": {
+            "life": {
+                "term": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": LifeInsurance.TERM_LIFE,
+                    }
+                )
+                > 0,
+                "whole_life": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": LifeInsurance.WHOLE_LIFE,
+                    }
+                )
+                > 0,
+                "universal_life": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": LifeInsurance.UNIVERSAL_LIFE,
+                    }
+                )
+                > 0,
+            },
+            "accident_and_health": {
+                "hospitalization": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": HealthInsurance.HOSPITALIZATION,
+                    }
+                )
+                > 0,
+                "critical_illness": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": HealthInsurance.CRITICAL_ILLNESS,
+                    }
+                )
+                > 0,
+                "personal_accident": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": HealthInsurance.PERSONAL_ACCIDENT,
+                    }
+                )
+                > 0,
+                "private_integrated_shield_plans": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": HealthInsurance.PRIVATE_INTEGRATED_SHIELD_PLANS,
+                    }
+                )
+                > 0,
+            },
+            "investments": {
+                "endowment": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": InvestmentInsurance.ENDOWMENT,
+                    }
+                )
+                > 0,
+                "investment_related": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": InvestmentInsurance.INVESTMENT_RELATED,
+                    }
+                )
+                > 0,
+                "retirement": insurance_db.count_documents(
+                    {
+                        "uid": details_dict["user_id"],
+                        "insurance_coverage.insurance_type": InvestmentInsurance.RETIREMENT,
+                    }
+                )
+                > 0,
+            },
+            "others": insurance_db.count_documents(
+                {
+                    "uid": details_dict["user_id"],
+                    "insurance_coverage.insurance_type": {
+                        "$in": [enum.value for enum in GeneralInsurance]
+                    },
+                }
+            )
+            > 0,
+        },
+        "maximum_sum_insured": {
+            "life": list(
+                insurance_db.aggregate(
+                    [
+                        {
+                            "$match": {
+                                "insurance_coverage.insurance_type": {
+                                    "$in": [enum.value for enum in LifeInsurance]
+                                }
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": None,
+                                "max_total_premiums": {
+                                    "$max": "$insurance_coverage.total_premiums"
+                                },
+                            }
+                        },
+                    ]
+                )
+            ),
+            "accident_and_health": list(
+                insurance_db.aggregate(
+                    [
+                        {
+                            "$match": {
+                                "insurance_coverage.insurance_type": {
+                                    "$in": [enum.value for enum in HealthInsurance]
+                                }
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": None,
+                                "max_total_premiums": {
+                                    "$max": "$insurance_coverage.total_premiums"
+                                },
+                            }
+                        },
+                    ]
+                )
+            ),
+            "investments": list(
+                insurance_db.aggregate(
+                    [
+                        {
+                            "$match": {
+                                "insurance_coverage.insurance_type": {
+                                    "$in": [enum.value for enum in InvestmentInsurance]
+                                }
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": None,
+                                "max_total_premiums": {
+                                    "$max": "$insurance_coverage.total_premiums"
+                                },
+                            }
+                        },
+                    ]
+                )
+            ),
+            "others": list(
+                insurance_db.aggregate(
+                    [
+                        {
+                            "$match": {
+                                "insurance_coverage.insurance_type": {
+                                    "$in": [enum.value for enum in GeneralInsurance]
+                                }
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": None,
+                                "max_total_premiums": {
+                                    "$max": "$insurance_coverage.total_premiums"
+                                },
+                            }
+                        },
+                    ]
+                )
+            ),
+        },
+    }
+
+    return BaseJSONResponse(
+        status=StatusEnum.SUCCESS,
+        message="Insurance summary retrieved!",
+        status_code=200,
+        data=data,
     )
