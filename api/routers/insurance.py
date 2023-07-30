@@ -1,11 +1,16 @@
+from bson import ObjectId
 from fastapi import APIRouter, Depends
 from pymongo import MongoClient
 
-from api.models.response_models.common import BaseJSONResponse, BaseResponseModel
+from api.models.response_models.common import (
+    BaseHTTPException,
+    BaseJSONResponse,
+    BaseResponseModel,
+)
 from api.models.response_models.insurance import InsuranceModel
 from api.types.requests_types import StatusEnum
 from api.utils.database import get_cluster_connection
-from api.utils.requests_utils import model_to_dict
+from api.utils.requests_utils import dict_to_json, model_to_dict
 from api.utils.security import verify_token
 
 router = APIRouter()
@@ -34,10 +39,29 @@ async def create_insurance(
     )
 
 
-@router.post("/read_insurance")
-async def read_insurance():
+@router.get(
+    "/get_insurance/{insurance_id}",
+    response_model=BaseResponseModel[InsuranceModel],
+    dependencies=[Depends(verify_token)],
+)
+async def read_insurance(
+    insurance_id: str, cluster: MongoClient = Depends(get_cluster_connection)
+):
+    insurance_db = cluster["pocketmint"]["insurance_details"]
+    res = insurance_db.find_one({"_id": ObjectId(insurance_id)})
+    print(res)
+    if not res:
+        raise BaseHTTPException(
+            status=StatusEnum.FAILURE,
+            status_code=404,
+            message="Insurance not found!",
+        )
+
     return BaseJSONResponse(
-        status=StatusEnum.SUCCESS, message="Insurance read!", status_code=200
+        status=StatusEnum.SUCCESS,
+        message="Insurance found!",
+        status_code=200,
+        data=dict_to_json(res),
     )
 
 
