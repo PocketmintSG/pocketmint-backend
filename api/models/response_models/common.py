@@ -31,6 +31,8 @@ class BaseHTTPException(HTTPException):
         status: StatusEnum,
         data: Optional[GeneralErrorResponse] = None,
     ):
+        if status_code == 200:
+            raise ValueError("Status code for BaseHTTPException cannot be 200")
         super().__init__(
             status_code=status_code,
             detail=BaseResponseModel(message=message, status=status, data=data).dict(),
