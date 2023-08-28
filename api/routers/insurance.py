@@ -100,7 +100,9 @@ async def list_insurance(
                 "uid": insurance_details["user_id"],
                 "insurance_coverage.insurance_category": insurance_details[
                     "insurance_category"
-                ],
+                ]
+                if insurance_details["insurance_category"]
+                else {"$exists": True},
             }
         )
     )

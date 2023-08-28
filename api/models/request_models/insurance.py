@@ -1,12 +1,14 @@
+from typing import Union
 from pydantic import BaseModel
 
 from api.models.response_models.insurance import InsuranceModel
+from api.types.general import NullType
 from api.types.insurance import InsuranceCategory
 
 
 class ListInsuranceRequest(BaseModel):
     user_id: str
-    insurance_category: InsuranceCategory
+    insurance_category: Union[InsuranceCategory, NullType]
     # pagination_chunk_size: int
 
 
