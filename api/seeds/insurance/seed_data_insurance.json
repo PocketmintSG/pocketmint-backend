@@ -126,7 +126,7 @@
     },
     "insurance_coverage": {
       "cash_premiums": 1200.0,
-      "insurance_category": "Others",
+      "insurance_category": "General",
       "non_cash_premiums": 0.0,
       "total_premiums": 1200.0,
       "coverage_details": [

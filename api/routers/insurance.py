@@ -16,7 +16,7 @@ from api.models.response_models.common import (
 )
 from api.models.response_models.insurance import InsuranceModel, InsuranceModelMinified
 from api.types.insurance import (
-    OthersInsurance,
+    GeneralInsurance,
     HealthInsurance,
     InvestmentInsurance,
     LifeInsurance,
@@ -94,7 +94,16 @@ async def list_insurance(
     """
     insurance_details = insurance_details.dict()
     insurance_db = cluster["pocketmint"]["insurance_details"]
-    all_insurance = list(insurance_db.find({"uid": insurance_details["user_id"]}))
+    all_insurance = list(
+        insurance_db.find(
+            {
+                "uid": insurance_details["user_id"],
+                "insurance_coverage.insurance_category": insurance_details[
+                    "insurance_category"
+                ],
+            }
+        )
+    )
     res = []
     if all_insurance != None:
         # Extract the bare minimum information
@@ -305,11 +314,11 @@ async def get_insurance_summaries(
                 )
                 > 0,
             },
-            "others": insurance_db.count_documents(
+            "general": insurance_db.count_documents(
                 {
                     "uid": details_dict["user_id"],
                     "insurance_coverage.coverage_details.insurance_type": {
-                        "$in": [enum.value for enum in OthersInsurance]
+                        "$in": [enum.value for enum in GeneralInsurance]
                     },
                 }
             )
@@ -388,7 +397,7 @@ async def get_insurance_summaries(
                     ),
                 )
             ),
-            "others": list(
+            "general": list(
                 map(
                     lambda x: x["max_total_premiums"],
                     insurance_db.aggregate(
@@ -396,7 +405,7 @@ async def get_insurance_summaries(
                             {
                                 "$match": {
                                     "insurance_coverage.insurance_category": {
-                                        "$in": ["Others"]
+                                        "$in": ["General"]
                                     }
                                 }
                             },
