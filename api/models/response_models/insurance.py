@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from api.types.insurance import (
     CoverageType,
-    GeneralInsurance,
+    OthersInsurance,
     HealthInsurance,
     InvestmentInsurance,
     LifeInsurance,
@@ -14,7 +14,7 @@ from api.types.insurance import (
 
 class CoverageDetail(BaseModel):
     insurance_type: Union[
-        GeneralInsurance, LifeInsurance, InvestmentInsurance, HealthInsurance
+        OthersInsurance, LifeInsurance, InvestmentInsurance, HealthInsurance
     ]
     coverage_type: CoverageType
     coverage_amount: float

@@ -16,7 +16,7 @@ from api.models.response_models.common import (
 )
 from api.models.response_models.insurance import InsuranceModel, InsuranceModelMinified
 from api.types.insurance import (
-    GeneralInsurance,
+    OthersInsurance,
     HealthInsurance,
     InvestmentInsurance,
     LifeInsurance,
@@ -309,7 +309,7 @@ async def get_insurance_summaries(
                 {
                     "uid": details_dict["user_id"],
                     "insurance_coverage.coverage_details.insurance_type": {
-                        "$in": [enum.value for enum in GeneralInsurance]
+                        "$in": [enum.value for enum in OthersInsurance]
                     },
                 }
             )

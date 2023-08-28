@@ -29,7 +29,7 @@ class HealthInsurance(str, Enum):
     PRIVATE_INTEGRATED_SHIELD_PLANS = "Private Integrated Shield Plans"
 
 
-class GeneralInsurance(str, Enum):
+class OthersInsurance(str, Enum):
     HELPER = "Helper"
     TRAVEL = "Travel"
     CAR = "Car"
