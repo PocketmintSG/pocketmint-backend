@@ -317,87 +317,99 @@ async def get_insurance_summaries(
         },
         "maximum_sum_insured": {
             "life": list(
-                insurance_db.aggregate(
-                    [
-                        {
-                            "$match": {
-                                "insurance_coverage.insurance_category": {
-                                    "$in": ["Life"]
+                map(
+                    lambda x: x["max_total_premiums"],
+                    insurance_db.aggregate(
+                        [
+                            {
+                                "$match": {
+                                    "insurance_coverage.insurance_category": {
+                                        "$in": ["Life"]
+                                    }
                                 }
-                            }
-                        },
-                        {
-                            "$group": {
-                                "_id": None,
-                                "max_total_premiums": {
-                                    "$max": "$insurance_coverage.total_premiums"
-                                },
-                            }
-                        },
-                    ]
+                            },
+                            {
+                                "$group": {
+                                    "_id": None,
+                                    "max_total_premiums": {
+                                        "$max": "$insurance_coverage.total_premiums"
+                                    },
+                                }
+                            },
+                        ]
+                    ),
                 )
             ),
             "accident_and_health": list(
-                insurance_db.aggregate(
-                    [
-                        {
-                            "$match": {
-                                "insurance_coverage.insurance_category": {
-                                    "$in": ["Health"]
+                map(
+                    lambda x: x["max_total_premiums"],
+                    insurance_db.aggregate(
+                        [
+                            {
+                                "$match": {
+                                    "insurance_coverage.insurance_category": {
+                                        "$in": ["Health"]
+                                    }
                                 }
-                            }
-                        },
-                        {
-                            "$group": {
-                                "_id": None,
-                                "max_total_premiums": {
-                                    "$max": "$insurance_coverage.total_premiums"
-                                },
-                            }
-                        },
-                    ]
+                            },
+                            {
+                                "$group": {
+                                    "_id": None,
+                                    "max_total_premiums": {
+                                        "$max": "$insurance_coverage.total_premiums"
+                                    },
+                                }
+                            },
+                        ]
+                    ),
                 )
             ),
             "investments": list(
-                insurance_db.aggregate(
-                    [
-                        {
-                            "$match": {
-                                "insurance_coverage.insurance_category": {
-                                    "$in": ["Investment"]
+                map(
+                    lambda x: x["max_total_premiums"],
+                    insurance_db.aggregate(
+                        [
+                            {
+                                "$match": {
+                                    "insurance_coverage.insurance_category": {
+                                        "$in": ["Investment"]
+                                    }
                                 }
-                            }
-                        },
-                        {
-                            "$group": {
-                                "_id": None,
-                                "max_total_premiums": {
-                                    "$max": "$insurance_coverage.total_premiums"
-                                },
-                            }
-                        },
-                    ]
+                            },
+                            {
+                                "$group": {
+                                    "_id": None,
+                                    "max_total_premiums": {
+                                        "$max": "$insurance_coverage.total_premiums"
+                                    },
+                                }
+                            },
+                        ]
+                    ),
                 )
             ),
             "others": list(
-                insurance_db.aggregate(
-                    [
-                        {
-                            "$match": {
-                                "insurance_coverage.insurance_category": {
-                                    "$in": ["Others"]
+                map(
+                    lambda x: x["max_total_premiums"],
+                    insurance_db.aggregate(
+                        [
+                            {
+                                "$match": {
+                                    "insurance_coverage.insurance_category": {
+                                        "$in": ["Others"]
+                                    }
                                 }
-                            }
-                        },
-                        {
-                            "$group": {
-                                "_id": None,
-                                "max_total_premiums": {
-                                    "$max": "$insurance_coverage.total_premiums"
-                                },
-                            }
-                        },
-                    ]
+                            },
+                            {
+                                "$group": {
+                                    "_id": None,
+                                    "max_total_premiums": {
+                                        "$max": "$insurance_coverage.total_premiums"
+                                    },
+                                }
+                            },
+                        ]
+                    ),
                 )
             ),
         },
