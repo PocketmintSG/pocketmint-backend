@@ -1,0 +1,197 @@
+[
+  {
+    "uid": "65zJmgDad0b0QOt2I7EKmML9T1u2",
+    "policy_details": {
+      "policy_number": "P001",
+      "cash_premiums": 1000.0,
+      "insurance_name": "Candle Insurance",
+      "insured_person": "John Doe",
+      "insurer": "XYZ Insurance",
+      "beneficiary": "Jane Doe",
+      "maturity_date": "2030-12-31T00:00:00"
+    },
+    "insurance_coverage": {
+      "cash_premiums": 1000.0,
+      "insurance_category": "Life",
+      "non_cash_premiums": 0.0,
+      "total_premiums": 1000.0,
+      "coverage_details": [
+        {
+          "insurance_type": "Term Life",
+          "coverage_type": "Total Permanent Disability",
+          "coverage_amount": 50000.0
+        }
+      ]
+    },
+    "agent_details": {
+      "name": "Agent Smith",
+      "contact_number": "123-456-7890",
+      "email": "agent@example.com",
+      "agency": "ABC Insurance Agency"
+    },
+    "description": {
+      "desc_text": "This is a sample insurance policy.",
+      "files": [
+        "https://s3.amazonaws.com/bucket/file1.pdf",
+        "https://s3.amazonaws.com/bucket/file2.pdf"
+      ]
+    }
+  },
+  {
+    "uid": "65zJmgDad0b0QOt2I7EKmML9T1u2",
+    "policy_details": {
+      "policy_number": "P002",
+      "cash_premiums": 800.0,
+      "insurance_name": "Headset Economics",
+      "insured_person": "Jane Smith",
+      "insurer": "ABC Health",
+      "beneficiary": "John Smith",
+      "maturity_date": "2032-06-15T00:00:00"
+    },
+    "insurance_coverage": {
+      "cash_premiums": 800.0,
+      "insurance_category": "Health",
+      "non_cash_premiums": 0.0,
+      "total_premiums": 800.0,
+      "coverage_details": [
+        {
+          "insurance_type": "Hospitalization",
+          "coverage_type": "Personal Accident",
+          "coverage_amount": 60500.0
+        }
+      ]
+    },
+    "agent_details": {
+      "name": "Agent Johnson",
+      "contact_number": "987-654-3210",
+      "email": "agent2@example.com",
+      "agency": "XYZ Health Agency"
+    },
+    "description": {
+      "desc_text": "This is a sample health insurance policy.",
+      "files": [
+        "https://s3.amazonaws.com/bucket/file3.pdf",
+        "https://s3.amazonaws.com/bucket/file4.pdf"
+      ]
+    }
+  },
+  {
+    "uid": "65zJmgDad0b0QOt2I7EKmML9T1u2",
+    "policy_details": {
+      "policy_number": "P003",
+      "cash_premiums": 1500.0,
+      "insurance_name": "Auto Insurance",
+      "insured_person": "Alice Johnson",
+      "insurer": "123 Auto",
+      "beneficiary": "Bob Johnson",
+      "maturity_date": "2031-08-22T00:00:00"
+    },
+    "insurance_coverage": {
+      "cash_premiums": 1500.0,
+      "insurance_category": "Life",
+      "non_cash_premiums": 0.0,
+      "total_premiums": 1500.0,
+      "coverage_details": [
+        {
+          "insurance_type": "Whole Life",
+          "coverage_type": "Death",
+          "coverage_amount": 30000.0
+        }
+      ]
+    },
+    "agent_details": {
+      "name": "Agent Brown",
+      "contact_number": "555-123-4567",
+      "email": "agent3@example.com",
+      "agency": "AutoProtect Agency"
+    },
+    "description": {
+      "desc_text": "This is a sample auto insurance policy.",
+      "files": [
+        "https://s3.amazonaws.com/bucket/file5.pdf",
+        "https://s3.amazonaws.com/bucket/file6.pdf"
+      ]
+    }
+  },
+  {
+    "uid": "65zJmgDad0b0QOt2I7EKmML9T1u2",
+    "policy_details": {
+      "policy_number": "P004",
+      "cash_premiums": 1200.0,
+      "insurance_name": "Home Insurance",
+      "insured_person": "David Williams",
+      "insurer": "Secure Homes",
+      "beneficiary": "Emily Williams",
+      "maturity_date": "2033-04-10T00:00:00"
+    },
+    "insurance_coverage": {
+      "cash_premiums": 1200.0,
+      "insurance_category": "Others",
+      "non_cash_premiums": 0.0,
+      "total_premiums": 1200.0,
+      "coverage_details": [
+        {
+          "insurance_type": "Helper",
+          "coverage_type": "Hospitalization Charges",
+          "coverage_amount": 10000.0
+        }
+      ]
+    },
+    "agent_details": {
+      "name": "Agent Miller",
+      "contact_number": "999-888-7777",
+      "email": "agent4@example.com",
+      "agency": "Safe Haven Agency"
+    },
+    "description": {
+      "desc_text": "This is a sample home insurance policy.",
+      "files": [
+        "https://s3.amazonaws.com/bucket/file7.pdf",
+        "https://s3.amazonaws.com/bucket/file8.pdf"
+      ]
+    }
+  },
+  {
+    "uid": "65zJmgDad0b0QOt2I7EKmML9T1u2",
+    "policy_details": {
+      "policy_number": "P005",
+      "cash_premiums": 700.0,
+      "insurance_name": "Travel Insurance",
+      "insured_person": "Sarah Lee",
+      "insurer": "Wanderlust Insurers",
+      "beneficiary": "Michael Lee",
+      "maturity_date": "2034-02-18T00:00:00"
+    },
+    "insurance_coverage": {
+      "cash_premiums": 700.0,
+      "insurance_category": "Investment",
+      "non_cash_premiums": 0.0,
+      "total_premiums": 700.0,
+      "coverage_details": [
+        {
+          "insurance_type": "Endowment",
+          "coverage_type": "Death",
+          "coverage_amount": 30000.0
+        },
+        {
+          "insurance_type": "Investment Related",
+          "coverage_type": "Hospitalization Charges",
+          "coverage_amount": 50000.0
+        }
+      ]
+    },
+    "agent_details": {
+      "name": "Agent Anderson",
+      "contact_number": "111-222-3333",
+      "email": "agent5@example.com",
+      "agency": "ExploreSure Agency"
+    },
+    "description": {
+      "desc_text": "This is a sample travel insurance policy.",
+      "files": [
+        "https://s3.amazonaws.com/bucket/file9.pdf",
+        "https://s3.amazonaws.com/bucket/file10.pdf"
+      ]
+    }
+  }
+]
