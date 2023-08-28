@@ -1,6 +1,15 @@
 from enum import Enum
 
 
+# Insurance Categories
+class InsuranceCategory(str, Enum):
+    GENERAL = "General"
+    HEALTH = "Health"
+    LIFE = "Life"
+    INVESTMENT = "Investment"
+
+
+# Insurance Types
 class LifeInsurance(str, Enum):
     TERM_LIFE = "Term Life"
     WHOLE_LIFE = "Whole Life"
@@ -30,6 +39,7 @@ class GeneralInsurance(str, Enum):
     HOME_MORTGAGE = "Home Mortgage"
 
 
+# Coverage Types
 class CoverageType(str, Enum):
     OTHERS = "Others"
     TOTAL_PERMANENT_DISABILITY = "Total Permanent Disability"

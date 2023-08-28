@@ -123,11 +123,11 @@ async def list_insurance(
                 }
             )
 
-    chunks = get_chunks(res, insurance_details["pagination_chunk_size"])
+    # chunks = get_chunks(res, insurance_details["pagination_chunk_size"])
     return BaseJSONResponse(
         status=StatusEnum.SUCCESS,
         message="Insurance listed!",
-        data=chunks,
+        data=res,
     )
 
 
@@ -204,27 +204,50 @@ async def get_insurance_summaries(
     insurance_db = cluster["pocketmint"]["insurance_details"]
     user_insurances = list(insurance_db.find({"uid": details_dict["user_id"]}))
 
+    total_annual_premiums = list(
+        insurance_db.aggregate(
+            [
+                {
+                    "$group": {
+                        "_id": None,
+                        "total_annual_premiums": {
+                            "$sum": "$policy_details.cash_premiums"
+                        },
+                    }
+                }
+            ]
+        )
+    )
+
+    # If DB is empty
+    total_annual_premiums = (
+        total_annual_premiums[0]["total_annual_premiums"]
+        if len(total_annual_premiums) > 0
+        else 0
+    )
+
     data = {
         "insurance_coverage": {
+            "total_annual_premiums": total_annual_premiums,
             "life": {
                 "term": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": LifeInsurance.TERM_LIFE,
+                        "insurance_coverage.coverage_details.insurance_type": LifeInsurance.TERM_LIFE,
                     }
                 )
                 > 0,
                 "whole_life": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": LifeInsurance.WHOLE_LIFE,
+                        "insurance_coverage.coverage_details.insurance_type": LifeInsurance.WHOLE_LIFE,
                     }
                 )
                 > 0,
                 "universal_life": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": LifeInsurance.UNIVERSAL_LIFE,
+                        "insurance_coverage.coverage_details.insurance_type": LifeInsurance.UNIVERSAL_LIFE,
                     }
                 )
                 > 0,
@@ -233,28 +256,28 @@ async def get_insurance_summaries(
                 "hospitalization": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": HealthInsurance.HOSPITALIZATION,
+                        "insurance_coverage.coverage_details.insurance_type": HealthInsurance.HOSPITALIZATION,
                     }
                 )
                 > 0,
                 "critical_illness": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": HealthInsurance.CRITICAL_ILLNESS,
+                        "insurance_coverage.coverage_details.insurance_type": HealthInsurance.CRITICAL_ILLNESS,
                     }
                 )
                 > 0,
                 "personal_accident": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": HealthInsurance.PERSONAL_ACCIDENT,
+                        "insurance_coverage.coverage_details.insurance_type": HealthInsurance.PERSONAL_ACCIDENT,
                     }
                 )
                 > 0,
                 "private_integrated_shield_plans": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": HealthInsurance.PRIVATE_INTEGRATED_SHIELD_PLANS,
+                        "insurance_coverage.coverage_details.insurance_type": HealthInsurance.PRIVATE_INTEGRATED_SHIELD_PLANS,
                     }
                 )
                 > 0,
@@ -263,21 +286,21 @@ async def get_insurance_summaries(
                 "endowment": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": InvestmentInsurance.ENDOWMENT,
+                        "insurance_coverage.coverage_details.insurance_type": InvestmentInsurance.ENDOWMENT,
                     }
                 )
                 > 0,
                 "investment_related": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": InvestmentInsurance.INVESTMENT_RELATED,
+                        "insurance_coverage.coverage_details.insurance_type": InvestmentInsurance.INVESTMENT_RELATED,
                     }
                 )
                 > 0,
                 "retirement": insurance_db.count_documents(
                     {
                         "uid": details_dict["user_id"],
-                        "insurance_coverage.insurance_type": InvestmentInsurance.RETIREMENT,
+                        "insurance_coverage.coverage_details.insurance_type": InvestmentInsurance.RETIREMENT,
                     }
                 )
                 > 0,
@@ -285,7 +308,7 @@ async def get_insurance_summaries(
             "others": insurance_db.count_documents(
                 {
                     "uid": details_dict["user_id"],
-                    "insurance_coverage.insurance_type": {
+                    "insurance_coverage.coverage_details.insurance_type": {
                         "$in": [enum.value for enum in GeneralInsurance]
                     },
                 }
@@ -298,8 +321,8 @@ async def get_insurance_summaries(
                     [
                         {
                             "$match": {
-                                "insurance_coverage.insurance_type": {
-                                    "$in": [enum.value for enum in LifeInsurance]
+                                "insurance_coverage.insurance_category": {
+                                    "$in": ["Life"]
                                 }
                             }
                         },
@@ -319,8 +342,8 @@ async def get_insurance_summaries(
                     [
                         {
                             "$match": {
-                                "insurance_coverage.insurance_type": {
-                                    "$in": [enum.value for enum in HealthInsurance]
+                                "insurance_coverage.insurance_category": {
+                                    "$in": ["Health"]
                                 }
                             }
                         },
@@ -340,8 +363,8 @@ async def get_insurance_summaries(
                     [
                         {
                             "$match": {
-                                "insurance_coverage.insurance_type": {
-                                    "$in": [enum.value for enum in InvestmentInsurance]
+                                "insurance_coverage.insurance_category": {
+                                    "$in": ["Investment"]
                                 }
                             }
                         },
@@ -361,8 +384,8 @@ async def get_insurance_summaries(
                     [
                         {
                             "$match": {
-                                "insurance_coverage.insurance_type": {
-                                    "$in": [enum.value for enum in GeneralInsurance]
+                                "insurance_coverage.insurance_category": {
+                                    "$in": ["Others"]
                                 }
                             }
                         },

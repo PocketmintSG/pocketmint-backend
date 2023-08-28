@@ -5,7 +5,7 @@ from api.models.response_models.insurance import InsuranceModel
 
 class ListInsuranceRequest(BaseModel):
     user_id: str
-    pagination_chunk_size: int
+    # pagination_chunk_size: int
 
 
 class UpdateInsuranceRequest(BaseModel):
