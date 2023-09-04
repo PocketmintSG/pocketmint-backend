@@ -27,7 +27,7 @@ class InsuranceModelPolicyDetails(BaseModel):
     insured_person: str
     insurer: str
     beneficiary: str
-    maturity_date: datetime.datetime
+    maturity_date: str  # Saved as a str instead of datetime.datetime due to issues when converting the InsuranceModelPolicyDetails BaseModel object into a JSON object
 
 
 class InsuranceModelInsuranceCoverage(BaseModel):

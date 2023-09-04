@@ -1,4 +1,5 @@
 import json
+from bson import json_util
 
 ### QUICK FIX FOR IMPORT ERROR, NEED TO REFACTOR ##
 from pymongo import MongoClient
