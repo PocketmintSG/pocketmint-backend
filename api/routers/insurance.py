@@ -198,7 +198,7 @@ async def delete_insurance(
         status=StatusEnum.SUCCESS,
         message="Insurance deleted!",
         status_code=200,
-        data=deleted_insurance,
+        # data=model_to_dict(deleted_insurance),
     )
 
 
