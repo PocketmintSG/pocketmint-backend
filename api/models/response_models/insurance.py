@@ -8,6 +8,7 @@ from api.types.insurance import (
     HealthInsurance,
     InvestmentInsurance,
     LifeInsurance,
+    InsuranceCategory,
 )
 
 
@@ -26,12 +27,12 @@ class InsuranceModelPolicyDetails(BaseModel):
     insured_person: str
     insurer: str
     beneficiary: str
-    maturity_date: datetime.datetime
+    maturity_date: str  # Saved as a str instead of datetime.datetime due to issues when converting the InsuranceModelPolicyDetails BaseModel object into a JSON object
 
 
 class InsuranceModelInsuranceCoverage(BaseModel):
     cash_premiums: float
-    insurance_type: str
+    insurance_category: InsuranceCategory
     non_cash_premiums: float
     total_premiums: float
     coverage_details: List[CoverageDetail]
@@ -67,4 +68,4 @@ class InsuranceModelMinified(BaseModel):
     agent_name: str
     agent_contact_number: str
     beneficiary: str
-    insured_by: str
+    # insured_by: str
