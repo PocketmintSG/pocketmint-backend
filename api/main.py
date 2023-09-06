@@ -44,7 +44,7 @@ async def root():
 
 
 # ping endpoint
-@app.post("/ping", dependencies=[Depends(verify_token)])
+@app.post("/ping")
 async def validate():
     return JSONResponse(content={"message": "Pong!"}, status_code=200)
 
