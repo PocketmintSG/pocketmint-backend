@@ -21,7 +21,7 @@ async def verify_token(authorization: str = Header(...)):
         auth.verify_id_token(authorization.split(" ")[1])
     except auth.ExpiredIdTokenError:
         raise BaseHTTPException(
-            status_code=400,
+            status_code=401,
             message="Credentials has expired",
             status=StatusEnum.FAILURE,
         )
