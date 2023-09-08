@@ -1,7 +1,7 @@
 import hashlib
 import uuid
-import magic
 import os
+import imghdr
 
 from PIL import Image
 from io import BytesIO
@@ -20,8 +20,8 @@ async def compress_image(image_data: bytes, quality: int = 20):
 
 
 async def validate_image(image_data: bytes):
-    file_type = magic.from_buffer(image_data, mime=True)
-    if not file_type.startswith("image"):
+    file_type = imghdr.what(None, h=image_data)
+    if not file_type:
         raise ValueError("Uploaded file is not an image")
     return image_data
 
