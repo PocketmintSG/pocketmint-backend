@@ -12,11 +12,22 @@ load_dotenv()
 
 router = APIRouter()
 
-with open("firebase_config.json") as config_file:
-    config = json.load(config_file)
+# with open("firebase_config.json") as config_file:
+#     config = json.load(config_file)
 
 
-pb = pyrebase.initialize_app(config)
+pb = pyrebase.initialize_app(
+    {
+        "apiKey": "AIzaSyC-MYIPxArSkkzyS0Gig-5JqX0iM4WC7mg",
+        "authDomain": "pocketmint-frontend.firebaseapp.com",
+        "projectId": "pocketmint-frontend",
+        "storageBucket": "pocketmint-frontend.appspot.com",
+        "messagingSenderId": "106285860508",
+        "appId": "1:106285860508:web:05281520dc7d89150c4f59",
+        "measurementId": "G-SDTG6MF8V9",
+        "databaseURL": "https://pocketmint-frontend-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    }
+)
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 
