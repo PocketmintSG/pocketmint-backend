@@ -26,7 +26,7 @@ firebase = firebase_admin.initialize_app(
 
 app = FastAPI()
 allow_all = ["*"]
-origins = ["http://localhost:5173"]
+origins = ["http://localhost:5173", "https://pocketmint-frontend.web.app"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
