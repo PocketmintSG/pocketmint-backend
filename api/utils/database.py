@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
+import certifi
 
 load_dotenv()
 
@@ -9,5 +10,5 @@ MONGODB_URI = os.environ.get("MONGODB_URI_DEV" if ENV == "dev" else "MONGODB_URI
 
 
 def get_cluster_connection() -> MongoClient:
-    client = MongoClient(MONGODB_URI)
+    client = MongoClient(MONGODB_URI, tlsCAFile=certifi.where())
     return client

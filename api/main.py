@@ -12,24 +12,10 @@ from api.routers.router import api_router
 from mangum import Mangum
 
 
-# with open("firebase_secrets.json") as json_file:
-#     cert = json.load(json_file)
+with open("firebase_secrets.json") as json_file:
+    cert = json.load(json_file)
 
-cred = credentials.Certificate(
-    {
-        "type": "service_account",
-        "project_id": "pocketmint-frontend",
-        "private_key_id": "a352b9f3909f8c1e06541ad0b1cc79607d706c24",
-        "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC+XNsyJP26uL+5\n/cucC4gUpu8GohdDVOQxWu6AhrIB5NCDsvZF3twW7abOwx7Foh9mnvGY7bJ3zdor\nFvRps3BcX8W8QY9L8s6YS8GQM1UPOxeRkcBUQSjWlG9Yawp2vd+a0vSrgTxw0YuE\nqWp5HAExAEc5vY8pSdO0zEq9vdTauz06mMpuNU8cxVyBL1DnIwuGVdwRIcWIog8k\nUcsFhE32CpmR08Wfu3n370a2Djf84vFJ/aPqyRXvPga2pX+3KYky3cq2IT7k3sTt\nqLZqQAxaSq1RG0fRbRG1J1J5W7HEMqMysvCMUJgLpRQBwuEtOmkgSSngAO2oWGV6\nrx1UAKv7AgMBAAECggEADruA+1CBkoHZ1LsfluQNlAuXVBwXUM6xGmC/NJM4E41x\n1b9z79RflCawUjAnoYP6iiai7AL5XOxBhjQwlj2c5IlE9FzeijIwavjx8gcG/jbE\njC+LgvnH/1Ndiqo+FRJ8y66n4N4Pn2uYMJwr8VOJhBFRcdaJzdg42jU1U5ntb0AM\nGgmwr/ycTky0k61R5odYfjUxo4V0IqYbpGfztMQZtoB6DQHXmH7W06zyCkA5ySs8\nFjyfifJeEbtvunjSX+7TQR+x3BD/yZgyfQ4J/Amnn6XM6sGUV4EG+SQ28w1jCMjy\ndvrnqLZR8JnEqibBf5ei6X0IUeS+6Zjd20YOCcwygQKBgQDyx7+Hl19sdqQR0FXM\nGSllVXE104yAdaClRCJXaCg6HfFqZW54/civ2/cTblgXT6oRp0JeP3s8RvOwsOUF\nfjilyI+CYXeP6mviZiZrVrGcleorBqC63izrxXopBol9LKbUH0oXAWpM3dDAi+rz\nFTwKkgfjYOJ1vRoyTebJgN5MTQKBgQDIum4e0VGhfhqvni4IPpGFm5v5yb4Ryc6f\nc8oYhlqKBZ2ZF5ssnZXz+dx0VISpfVJzWM2OBNknyOvGyMCi93eXgZOVQ48+MPXo\nuY0+dEf+PNXHtsTkhFelBOqIYAcyqlK2C3d0aeQkEPk1YeKl5kVPJ7I+eZ03ZZnj\nBDThKDhdZwKBgFz2vdFm1kRLHcIwe1n+3IoP8JzC188su4ntEBVWLekrJBEwq9+q\nlhk46mBHZXXvrFi8Kj66oi7PoGqtIdU7oudgaAtt1QGHqy3zHY0GklY6VYOKMyu6\n/Yp+gKuK9ES5P1yEarNqeFDcsx23tgzEucv2ZQzdQXoCIjDXAaNxNC4VAoGAOo7g\nt07bYKB4Sol75l3SeEbYLvvi3i+gfrX53EO9wAw5WMMhOtfSOjXHUYyikwuDdTEP\n7oGNlGSyG/DO+fv1wJZFpsLp0/vWkYkoInMr2YiH2VaBhCTzqKmRfi19jBNSQ9d+\nhtCphLgK677drwZJa/kpr74s1k9moGrGvnTMVLsCgYBI5rqROELUuvVo2XC0g6jr\nN6jtWJUvnK7TpX9CkHYl+bBG1Ww2XLRc4PdmCpFt8DSke2ZgUMKFMBDsIP7PkwTg\n0k0zSPjeRXbKfrg72eqycyi/mz8nAzNCIMTB/UvfM3UNrgD5NnSYut6rpmV7+CKP\nf/fRUNWYEs2H5r97AFjihg==\n-----END PRIVATE KEY-----\n",
-        "client_email": "firebase-adminsdk-qbquz@pocketmint-frontend.iam.gserviceaccount.com",
-        "client_id": "116098279592139905632",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-qbquz%40pocketmint-frontend.iam.gserviceaccount.com",
-        "universe_domain": "googleapis.com",
-    }
-)
+cred = credentials.Certificate(cert)
 
 firebase = firebase_admin.initialize_app(
     cred,
