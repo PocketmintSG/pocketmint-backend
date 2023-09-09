@@ -25,7 +25,12 @@ This server is hosted on EC2, using the Pocketmint AWS account. To SSH to the EC
 
 1. Obtain a copy of `pocketmint-backend-key.pem` secret.
 2. Execute `ssh -i "pocketmint-backend-key.pem" ubuntu@ec2-18-141-203-207.ap-southeast-1.compute.amazonaws.com`
-3. To update the server, kill the `uvicorn` process and execute `git pull origin main`. To restart the server, execute `python3 -m uvicorn api.main:app`.
+3. To update the server, kill the `uvicorn` process by `grep`-ing the previous `uvicorn` process by doing `ps aux | grep "uvicorn api.main:app"`. Once you obtain the PID of the process, kill it by executing `kill <PID>`. Execute `git pull origin main` to fetch new changes. To restart the server, execute `nohup python3 -m uvicorn api.main:app &`.
+
+## Connecting to the MongoDB Instance
+
+1. Note that you have to add your IP address to the MongoDB cluster to allow connections to it.
+2. Connect to the MongoDB instance using the following URI: `mongodb+srv://pocketmint-dev:<MongoDB password>@dev.gx0pb5p.mongodb.net/`
 
 # AWS Configurations
 
