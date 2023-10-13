@@ -50,6 +50,8 @@ This server is hosted on EC2, using the Pocketmint AWS account. To SSH to the EC
 1. Note that you have to add your IP address to the MongoDB cluster to allow connections to it.
 2. Connect to the MongoDB instance using the following URI: `mongodb+srv://pocketmint-dev:<MongoDB password>@dev.gx0pb5p.mongodb.net/`
 
+Please login to Mongo Atlas using Pocketmint's Google authentication to connect and view more information on the database.
+
 ## AWS Configurations
 
 - [Modify S3 bucket permissions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteAccessPermissionsReqd.html)
